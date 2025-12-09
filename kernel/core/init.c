@@ -6,6 +6,7 @@
 #include "idt.h"
 #include "irq.h"
 #include "isr.h"
+#include "kheap.h"
 #include "paging.h"
 #include "pic.h"
 #include "pmm.h"
@@ -37,6 +38,7 @@ void kernel_init(void) {
   INIT_COMPONENT("keyboard", keyboard_init());
   INIT_COMPONENT("PMM (16MB)", pmm_init(16 * 1024 * 1024));
   INIT_COMPONENT("paging", paging_init());
+  INIT_COMPONENT("kernel heap", kheap_init());
 
   vga_println("");
   vga_set_color(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
