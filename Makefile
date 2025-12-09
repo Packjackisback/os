@@ -14,12 +14,27 @@ KERNEL_ASM_OBJECTS = $(patsubst kernel/%.asm, build/%.o, $(KERNEL_ASM_SOURCES))
 all: build/os.img
 
 build/os.img: build/boot.bin build/kernel.bin
+	@KERNEL_SIZE=$(stat -c%s build/kernel.bin 2>/dev/null || stat -f%z build/kernel.bin); \
+	SECTORS=$(((${KERNEL_SIZE} + 511) / 512)); \
+	echo "Kernel size: ${KERNEL_SIZE} bytes ($SECTORS sectors)"; \
+	if [ $SECTORS -gt 72 ]; then \
+		echo "ERROR: Kernel too large ($SECTORS sectors, max 72)"; \
+		exit 1; \
+	fi
 	cat build/boot.bin build/kernel.bin > build/os.img
 	@truncate -s 1440K build/os.img
 
 build/boot.bin: boot/boot.asm
 	@mkdir -p build
-	$(ASM) -f bin boot/boot.asm -o build/boot.bin
+	@if [ -f build/kernel.bin ]; then \
+		KERNEL_SIZE=$(stat -c%s build/kernel.bin 2>/dev/null || stat -f%z build/kernel.bin); \
+		SECTORS=$(((${KERNEL_SIZE} + 511) / 512)); \
+		$(ASM) -f bin boot/boot.asm -o build/boot.bin -D KERNEL_SECTORS=$SECTORS; \
+		echo "Bootloader: loading $SECTORS sectors ($KERNEL_SIZE bytes)"; \
+	else \
+		$(ASM) -f bin boot/boot.asm -o build/boot.bin -D KERNEL_SECTORS=20; \
+		echo "Bootloader: loading 20 sectors (default)"; \
+	fi
 
 build/kernel_entry.o: kernel/kernel_entry.asm
 	@mkdir -p build

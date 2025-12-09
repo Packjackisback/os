@@ -19,10 +19,11 @@ start:
     mov es, bx
     xor bx, bx
     mov ah, 0x02
-	mov al, 10
+kernel_sectors:
+		mov al, 20
     mov ch, 0
-	mov cl, 2
-	mov dh, 0
+		mov cl, 2
+		mov dh, 0
     mov dl, [boot_drive]
     int 0x13
     jc disk_error

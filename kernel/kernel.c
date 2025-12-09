@@ -1,12 +1,20 @@
 #include "kernel.h"
+
+#include "drivers/input/keyboard.h"
 #include "drivers/video/vga.h"
+
+#include "string.h"
+
 #include "idt.h"
 #include "irq.h"
 #include "isr.h"
 #include "pic.h"
+#include "pmm.h"
 
 void kernel_main() {
   vga_init();
+
+  vga_clear();
 
   vga_set_color(VGA_COLOR_LIGHT_CYAN, VGA_COLOR_BLACK);
   vga_println("<><><><><><><><><><><><><><><><><><><><>");
@@ -50,14 +58,30 @@ void kernel_main() {
   vga_set_color(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
   vga_println("[OK]");
 
+  vga_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+  vga_print("Initializing keyboard... ");
+  keyboard_init();
+  vga_set_color(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
+  vga_println("[OK]");
+
+  vga_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+  vga_print("Initializing memory manager... ");
+  pmm_init(16 * 1024 * 1024);
+  vga_set_color(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
+  vga_println("[OK]");
+
   vga_println("");
   vga_set_color(VGA_COLOR_LIGHT_GREEN, VGA_COLOR_BLACK);
   vga_println("Bootloader executed successfully");
 
   vga_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
   vga_println("");
-  vga_println("System ready!");
+  vga_println("System ready! Type:");
   vga_println("");
+
+  vga_set_color(VGA_COLOR_LIGHT_CYAN, VGA_COLOR_BLACK);
+  vga_print("> ");
+  vga_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
 
   while (1) {
     asm volatile("hlt");
